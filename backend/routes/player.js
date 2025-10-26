@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post('/', protect, restrictTo('admin'), controller.createPlayer);
 router.patch('/:id', protect, restrictTo('admin'), controller.updatePlayer);
+router.delete('/:id', protect, restrictTo('admin'), controller.deletePlayer);
 
 // --- Public Data Retrieval ---
 router.get('/', controller.searchPlayers);

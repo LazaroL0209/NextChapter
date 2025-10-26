@@ -29,11 +29,13 @@ const playerSchema = new Schema({
     },
     profile_image_url: {
         type: String,
-        trim: true
+        trim: true,
+        default: '../public/images/default_image.png'
     },
     bio: {
         type: String,
-        trim: true
+        trim: true,
+        default: 'Player at TheNextChapter!'
     },
     height_inches: {
         type: Number

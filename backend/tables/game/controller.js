@@ -190,11 +190,11 @@ const _internalFinalizeGame = async (gameId) => {
 // --- APIs ---
 const createGame = async (request, response) => {
     const created_by = request.user._id; // From protect middleware
-    const { game_type, team_a, team_b, score_to_win } = request.body;
+    const { game_type, team_a, team_b } = request.body;
 
     // Basic Validation
-    if (!game_type || !team_a || !team_b || !score_to_win || team_a.length === 0 || team_b.length === 0) {
-        return response.status(400).json({ message: 'Missing required game creation fields (game_type, team_a, team_b, score_to_win)' });
+    if (!game_type || !team_a || !team_b || team_a.length === 0 || team_b.length === 0) {
+        return response.status(400).json({ message: 'Missing required game creation fields' });
     }
     // Add validation for player IDs if needed
 

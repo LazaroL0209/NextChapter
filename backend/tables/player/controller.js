@@ -56,7 +56,9 @@ const createPlayer = async (request, response) => {
 };
 
 const updatePlayer = async (request, response) => {
+    // params comes from the /:id
     const { id } = request.params;
+    // body comes from frontend
     const updates = request.body; // Contains fields to update
 
     // Validate if the ID is a valid MongoDB ObjectId
@@ -84,6 +86,27 @@ const updatePlayer = async (request, response) => {
     }
 };
 
+const deletePlayer = async (request, response) => {
+    const { id } = request.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return response.status(404).json({ message: 'Player not found'});
+    }
+
+    try {
+        const deletePlayer = await Player.findByIdAndDelete(id);
+
+        if (!deletePlayer) {
+            return response.status(404).json({ message: 'Player not found'});
+        }
+
+        return response.status(200).json({ message: 'Player Deleted'});
+    } catch (error) {
+        console.error("Player Deletion Error: ", error);
+        response.status(500).json({ message: 'Server error during player deletion'});
+    }
+}
+
 const searchPlayers = async (request, response) => {
     const searchTerm = request.query.search;
 
@@ -100,7 +123,7 @@ const searchPlayers = async (request, response) => {
                 { instagram_handle: regex }
             ]
         })
-        .select('_id name instagram_handle profile_image_url')
+        .select('_id name instagram_handle profile_image_url position height_inches weight_lbs')
         .limit(20); // Limit results to prevent overwhelming response
 
         response.status(200).json(players);
@@ -120,6 +143,7 @@ const getPlayerById = async (request, response) => {
 
     try {
         const player = await Player.findById(id);
+
         if (!player) {
             return response.status(404).json({ message: 'Player not found' });
         }
@@ -156,6 +180,7 @@ const getPlayerRecentGames = async (request, response) => {
 module.exports = {
     createPlayer,
     updatePlayer,
+    deletePlayer,
     searchPlayers,
     getPlayerById,
     getPlayerRecentGames
