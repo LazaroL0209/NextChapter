@@ -89,41 +89,51 @@ const _internalCalculateStats = (game) => {
 
 // --- Internal Helper: Update Player Overall Stats ---
 const _internalUpdatePlayerStats = async (game) => {
-    // ... (rest of the function setup, including preparing shotsByPlayer) ...
+    let playerUpdatePromises = [];
+    const shotsByPlayer = {};
 
+    game.events.forEach(event => {
+        if (event.type === 'shot') {
+            const playerIdStr = event.player_id.toString();
+            if (!shotsByPlayer[playerIdStr]) {
+                shotsByPlayer[playerIdStr] = [];
+            }
+            // Format shot data as needed for player schema's all_time_shot_data
+            shotsByPlayer[playerIdStr].push({
+                x: event.location?.x, // Use optional chaining just in case
+                y: event.location?.y,
+                made: event.made,
+                points: event.points,
+                game_id: game._id, // Add the game ID reference
+                timestamp: event.timestamp // Use the event's timestamp
+            });
+        }
+    });
+    // <<< END ADDED SECTION >>>
+
+    // Now the rest of your function can use shotsByPlayer and playerUpdatePromises
     game.game_stats_summary.forEach((stats, playerIdStr) => {
         // --- Determine Win/Loss/Neither based on game status ---
+        // (Your existing win/loss logic here...)
         let winIncrement = 0;
         let lossIncrement = 0;
-        if (game.status === 'finished') { // Only count W/L for finished games
-            const isTeamA = game.teams.team_a.map(id => id.toString()).includes(playerIdStr);
-            const isTeamB = game.teams.team_b.map(id => id.toString()).includes(playerIdStr);
-
-            if (game.winner === 'team_a' && isTeamA) {
-                winIncrement = 1;
-            } else if (game.winner === 'team_b' && isTeamB) {
-                winIncrement = 1;
-            } else if (game.winner === 'team_a' && isTeamB) { // Check if player was on losing team
-                lossIncrement = 1;
-            } else if (game.winner === 'team_b' && isTeamA) { // Check if player was on losing team
-                lossIncrement = 1;
-            }
-            // Note: If winner is null or player wasn't on team_a/team_b (shouldn't happen), W/L are 0
-        }
-        // --- End Win/Loss Logic ---
-
+        // ... (rest of win/loss logic) ...
 
         const updateData = {
             $inc: {
-                'overall_stats.games_played': 1, // Always increment games played
-                'overall_stats.wins': winIncrement, // Use calculated increment
-                'overall_stats.losses': lossIncrement, // Use calculated increment
-                // ... rest of the $inc operations for pts, fga, fgm, etc. ...
+                'overall_stats.games_played': 1,
+                'overall_stats.wins': winIncrement,
+                'overall_stats.losses': lossIncrement,
+                // Double-check ALL these field names against BOTH schemas
                 'overall_stats.total_points': stats.pts || 0,
                 'overall_stats.total_fga': stats.fga || 0,
-                'overall_stats.total_fgm': stats.fgm || 0,
-                'overall_stats.total_3pa': stats['3pa'] || 0,
-                'overall_stats.total_3pm': stats['3pm'] || 0,
+                'overall_stats.total_fgm': stats.fgm || 0, // Ensure fgm is calculated correctly in _internalCalculateStats
+                'overall_stats.total_3pa': stats['3pa'] || 0, // Correctly access '3pa'
+                'overall_stats.total_3pm': stats['3pm'] || 0, // Correctly access '3pm'
+                // --- ADD MISSING FIELDS ---
+                'overall_stats.total_2pa': (stats.fga || 0) - (stats['3pa'] || 0), // Calculate 2PA if not stored
+                'overall_stats.total_2pm': (stats.fgm || 0) - (stats['3pm'] || 0), // Calculate 2PM if not stored
+                // --- END ADD MISSING ---
                 'overall_stats.total_fta': stats.fta || 0,
                 'overall_stats.total_ftm': stats.ftm || 0,
                 'overall_stats.total_rebounds': stats.reb || 0,
@@ -134,80 +144,119 @@ const _internalUpdatePlayerStats = async (game) => {
                 'overall_stats.total_steals': stats.stl || 0,
                 'overall_stats.total_blocks': stats.blk || 0,
                 'overall_stats.total_fouls': stats.pf || 0,
+                // 'overall_stats.total_plus_minus': stats.plus_minus || 0, // Plus/minus might need different calculation
                 'overall_stats.total_double_doubles': stats.is_double_double ? 1 : 0,
                 'overall_stats.total_triple_doubles': stats.is_triple_double ? 1 : 0,
             }
         };
 
-        // Add shot data (this part remains the same)
+        // Add shot data using the prepared shotsByPlayer object
         if (shotsByPlayer[playerIdStr] && shotsByPlayer[playerIdStr].length > 0) {
             updateData.$push = {
                 all_time_shot_data: { $each: shotsByPlayer[playerIdStr] }
             };
         }
 
+        // Add the update promise to the array
         playerUpdatePromises.push(
             Player.findByIdAndUpdate(playerIdStr, updateData)
         );
     });
 
     try {
-        await Promise.all(playerUpdatePromises);
+        await Promise.all(playerUpdatePromises); // Execute all updates concurrently
         console.log(`Successfully updated overall stats for players in game ${game._id} (Status: ${game.status})`);
     } catch (error) {
         console.error(`Error updating player stats for game ${game._id}:`, error);
-        // Consider how to handle partial failures
+        // Consider how to handle partial failures (e.g., logging which player updates failed)
     }
 };
 
+// Inside _internalFinalizeGame helper function
 const _internalFinalizeGame = async (gameId) => {
     try {
         const game = await Game.findById(gameId);
-        // ... (check if game exists and is in_progress) ...
 
-        // --- Determine winner based on current score ---
+        // --- <<< ADD THIS CHECK >>> ---
+        if (!game) {
+            console.error(`Finalize Error: Game ${gameId} not found.`);
+            return null; // Indicate failure: game not found
+        }
+        if (game.status !== 'in_progress') {
+            console.warn(`Finalize Warning: Game ${gameId} is already '${game.status}'. Cannot finalize again.`);
+            return null; // Indicate failure: game not in progress
+        }
+        // --- End Check ---
+
+        // Determine winner based on current score
         if (game.final_score.team_a > game.final_score.team_b) {
             game.winner = 'team_a';
         } else if (game.final_score.team_b > game.final_score.team_a) {
             game.winner = 'team_b';
         } else {
-            game.winner = null; // Handle ties if necessary, or decide tie-breaking rule
+            game.winner = null; // Handle ties
         }
-        // --- End winner determination ---
 
-        game.status = 'finished';
-        game.game_stats_summary = _internalCalculateStats(game);
-        const finalizedGame = await game.save();
-        _internalUpdatePlayerStats(finalizedGame).catch(/*...*/); // Update player stats
+        game.status = 'finished'; // Set status
+        game.game_stats_summary = _internalCalculateStats(game); // Calculate stats
+        const finalizedGame = await game.save(); // Save game state
 
-        return finalizedGame;
+        // Trigger player stat updates (run asynchronously is okay here)
+        _internalUpdatePlayerStats(finalizedGame).catch(err => {
+             console.error(`Background player stat update failed for finalized game ${gameId}:`, err);
+         });
+
+        return finalizedGame; // Return the updated game doc
      } catch (error) {
         console.error(`Error during internal finalization for game ${gameId}:`, error);
-        throw error;
+        throw error; // Rethrow to be caught by the main finalizeGame handler
     }
 };
 
 // --- APIs ---
 const createGame = async (request, response) => {
-    const created_by = request.user._id; // From protect middleware
-    const { game_type, team_a, team_b } = request.body;
+    const created_by = request.user._id;
+    const { game_type, team_a, team_b, score_to_win } = request.body;
 
-    // Basic Validation
+    // --- Basic Validation ---
     if (!game_type || !team_a || !team_b || team_a.length === 0 || team_b.length === 0) {
-        return response.status(400).json({ message: 'Missing required game creation fields' });
+        // Removed score_to_win check from here based on previous discussion
+        return response.status(400).json({ message: 'Missing required game creation fields (game_type, team_a, team_b)' });
     }
-    // Add validation for player IDs if needed
 
-    const all_player_ids = [...new Set([...team_a, ...team_b])]; // Combine and remove duplicates
+    const allIds = [...team_a, ...team_b];
+    const uniqueIds = [...new Set(allIds)]; // Get unique IDs
+
+    // --- Validate ID Format ---
+    for (const id of uniqueIds) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return response.status(400).json({ message: `Invalid player ID format: ${id}` });
+        }
+    }
 
     try {
+        // --- <<< ADD THIS CHECK: Check if all player IDs exist >>> ---
+        const foundPlayers = await Player.find({ '_id': { $in: uniqueIds } }).select('_id'); // Find players whose IDs are in the list
+
+        if (foundPlayers.length !== uniqueIds.length) {
+            // If the number of found players doesn't match the number of unique IDs provided...
+            const foundIds = foundPlayers.map(p => p._id.toString());
+            const missingIds = uniqueIds.filter(id => !foundIds.includes(id));
+            return response.status(404).json({
+                 message: 'One or more player IDs were not found',
+                 missing_ids: missingIds // Tell the frontend which IDs are invalid
+             });
+        }
+        // --- End Existence Check ---
+
+        // If all checks pass, proceed to create the game
         const newGame = new Game({
             created_by,
             game_type,
-            all_player_ids,
+            all_player_ids: uniqueIds, // Use the validated unique IDs
             teams: { team_a, team_b },
-            score_to_win,
-            status: 'in_progress', // Default set in schema, but explicit here is fine
+            score_to_win, // Optional score_to_win
+            status: 'in_progress',
         });
 
         const savedGame = await newGame.save();
@@ -284,8 +333,8 @@ const addGameEvent = async (request, response) => {
 
         // Respond with the updated game (either just saved or fully finalized)
         response.status(200).json({
-            message: finalizedGame ? 'Event added and game finalized' : 'Event added',
-            game: finalizedGame || game
+            message: 'Event added successfully',
+            game: game // Send back the updated game document
         });
 
 
