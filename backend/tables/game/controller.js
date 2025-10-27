@@ -3,6 +3,7 @@ const Player = require('../player/model'); // Import Player model for stat updat
 const mongoose = require('mongoose');
 
 // --- Helper Functions ---
+// --- Internally Calculating Stats ---
 const _internalCalculateStats = (game) => {
     const statsSummary = new Map(); // Use a Map to store stats per player ID
 
@@ -32,11 +33,11 @@ const _internalCalculateStats = (game) => {
                     if (event.points === 3) playerStats['3pm'] += 1;
                 }
                 break;
-            case 'free_throw': // Assuming free throws might be logged separately
+            case 'free_throw':
                  playerStats.fta += 1;
                  if (event.made) {
                      playerStats.ftm += 1;
-                     playerStats.pts += 1; // FTs are 1 point
+                     playerStats.pts += 1;
                  }
                  break;
             case 'rebound':
@@ -56,9 +57,7 @@ const _internalCalculateStats = (game) => {
             case 'foul':
                 playerStats.pf += 1;
                 break;
-            // Add case for 'assist' if you log assists directly
-            // Note: Calculating assists often requires linking a made shot to a previous pass,
-            // which adds complexity to the event logging or post-processing.
+            // Add case for 'assist' which will add some complexity later
             default:
                 break;
         }
@@ -70,13 +69,13 @@ const _internalCalculateStats = (game) => {
         let count10 = 0;
         if (stats.pts >= 10) count10++;
         if (stats.reb >= 10) count10++;
-        if (stats.ast >= 10) count10++; // Assuming assists are tracked
-        if (stats.stl >= 10) count10++; // Less common
-        if (stats.blk >= 10) count10++; // Less common
+        if (stats.ast >= 10) count10++;
+        if (stats.stl >= 10) count10++;
+        if (stats.blk >= 10) count10++;
 
         if (count10 >= 3) {
             stats.is_triple_double = true;
-            stats.is_double_double = true; // TD is also DD
+            stats.is_double_double = true;
         } else if (count10 >= 2) {
         stats.is_double_double = true;
         }
@@ -87,7 +86,7 @@ const _internalCalculateStats = (game) => {
     return statsSummary;
 };
 
-// --- Internal Helper: Update Player Overall Stats ---
+// --- Update Player Overall Stats ---
 const _internalUpdatePlayerStats = async (game) => {
     let playerUpdatePromises = [];
     const shotsByPlayer = {};
@@ -98,9 +97,8 @@ const _internalUpdatePlayerStats = async (game) => {
             if (!shotsByPlayer[playerIdStr]) {
                 shotsByPlayer[playerIdStr] = [];
             }
-            // Format shot data as needed for player schema's all_time_shot_data
             shotsByPlayer[playerIdStr].push({
-                x: event.location?.x, // Use optional chaining just in case
+                x: event.location?.x, // Optional just in case
                 y: event.location?.y,
                 made: event.made,
                 points: event.points,
@@ -109,31 +107,44 @@ const _internalUpdatePlayerStats = async (game) => {
             });
         }
     });
-    // <<< END ADDED SECTION >>>
 
-    // Now the rest of your function can use shotsByPlayer and playerUpdatePromises
     game.game_stats_summary.forEach((stats, playerIdStr) => {
         // --- Determine Win/Loss/Neither based on game status ---
-        // (Your existing win/loss logic here...)
         let winIncrement = 0;
         let lossIncrement = 0;
-        // ... (rest of win/loss logic) ...
+        
+        if (game.status === 'finished') {
+            // Is player on TeamA or TeamB
+            const isTeamA = game.teams.team_a.map(id => id.toString()).includes(playerIdStr);
+            const isTeamB = game.teams.team_b.map(id => id.toString()).includes(playerIdStr);
+
+            console.log(`Player ${playerIdStr}: isTeamA=${isTeamA}, isTeamB=${isTeamB}, gameWinner=${game.winner}`);
+
+            if (game.winner === 'team_a' && isTeamA) {
+                winIncrement = 1;
+            } else if (game.winner === 'team_b' && isTeamB) {
+                winIncrement = 1;
+            } else if (game.winner === 'team_a' && isTeamB) {
+                lossIncrement = 1;
+            } else if (game.winner === 'team_b' && isTeamA) {
+                lossIncrement = 1;
+            }
+
+            console.log(`Player ${playerIdStr}: winInc=${winIncrement}, lossInc=${lossIncrement}`);
+        }
 
         const updateData = {
             $inc: {
                 'overall_stats.games_played': 1,
                 'overall_stats.wins': winIncrement,
                 'overall_stats.losses': lossIncrement,
-                // Double-check ALL these field names against BOTH schemas
                 'overall_stats.total_points': stats.pts || 0,
                 'overall_stats.total_fga': stats.fga || 0,
-                'overall_stats.total_fgm': stats.fgm || 0, // Ensure fgm is calculated correctly in _internalCalculateStats
-                'overall_stats.total_3pa': stats['3pa'] || 0, // Correctly access '3pa'
-                'overall_stats.total_3pm': stats['3pm'] || 0, // Correctly access '3pm'
-                // --- ADD MISSING FIELDS ---
-                'overall_stats.total_2pa': (stats.fga || 0) - (stats['3pa'] || 0), // Calculate 2PA if not stored
-                'overall_stats.total_2pm': (stats.fgm || 0) - (stats['3pm'] || 0), // Calculate 2PM if not stored
-                // --- END ADD MISSING ---
+                'overall_stats.total_fgm': stats.fgm || 0,
+                'overall_stats.total_3pa': stats['3pa'] || 0,
+                'overall_stats.total_3pm': stats['3pm'] || 0,
+                'overall_stats.total_2pa': (stats.fga || 0) - (stats['3pa'] || 0),
+                'overall_stats.total_2pm': (stats.fgm || 0) - (stats['3pm'] || 0),
                 'overall_stats.total_fta': stats.fta || 0,
                 'overall_stats.total_ftm': stats.ftm || 0,
                 'overall_stats.total_rebounds': stats.reb || 0,
@@ -144,20 +155,17 @@ const _internalUpdatePlayerStats = async (game) => {
                 'overall_stats.total_steals': stats.stl || 0,
                 'overall_stats.total_blocks': stats.blk || 0,
                 'overall_stats.total_fouls': stats.pf || 0,
-                // 'overall_stats.total_plus_minus': stats.plus_minus || 0, // Plus/minus might need different calculation
                 'overall_stats.total_double_doubles': stats.is_double_double ? 1 : 0,
                 'overall_stats.total_triple_doubles': stats.is_triple_double ? 1 : 0,
             }
         };
 
-        // Add shot data using the prepared shotsByPlayer object
         if (shotsByPlayer[playerIdStr] && shotsByPlayer[playerIdStr].length > 0) {
             updateData.$push = {
                 all_time_shot_data: { $each: shotsByPlayer[playerIdStr] }
             };
         }
 
-        // Add the update promise to the array
         playerUpdatePromises.push(
             Player.findByIdAndUpdate(playerIdStr, updateData)
         );
@@ -168,25 +176,22 @@ const _internalUpdatePlayerStats = async (game) => {
         console.log(`Successfully updated overall stats for players in game ${game._id} (Status: ${game.status})`);
     } catch (error) {
         console.error(`Error updating player stats for game ${game._id}:`, error);
-        // Consider how to handle partial failures (e.g., logging which player updates failed)
     }
 };
 
-// Inside _internalFinalizeGame helper function
+// --- Internally Finalizing Game ---
 const _internalFinalizeGame = async (gameId) => {
     try {
         const game = await Game.findById(gameId);
 
-        // --- <<< ADD THIS CHECK >>> ---
         if (!game) {
             console.error(`Finalize Error: Game ${gameId} not found.`);
-            return null; // Indicate failure: game not found
+            return null; // game not found
         }
         if (game.status !== 'in_progress') {
             console.warn(`Finalize Warning: Game ${gameId} is already '${game.status}'. Cannot finalize again.`);
-            return null; // Indicate failure: game not in progress
+            return null; // game not in progress
         }
-        // --- End Check ---
 
         // Determine winner based on current score
         if (game.final_score.team_a > game.final_score.team_b) {
@@ -197,19 +202,18 @@ const _internalFinalizeGame = async (gameId) => {
             game.winner = null; // Handle ties
         }
 
-        game.status = 'finished'; // Set status
-        game.game_stats_summary = _internalCalculateStats(game); // Calculate stats
-        const finalizedGame = await game.save(); // Save game state
+        game.status = 'finished';
+        game.game_stats_summary = _internalCalculateStats(game);
+        const finalizedGame = await game.save();
 
-        // Trigger player stat updates (run asynchronously is okay here)
         _internalUpdatePlayerStats(finalizedGame).catch(err => {
              console.error(`Background player stat update failed for finalized game ${gameId}:`, err);
          });
 
-        return finalizedGame; // Return the updated game doc
+        return finalizedGame;
      } catch (error) {
         console.error(`Error during internal finalization for game ${gameId}:`, error);
-        throw error; // Rethrow to be caught by the main finalizeGame handler
+        throw error;
     }
 };
 
@@ -218,16 +222,13 @@ const createGame = async (request, response) => {
     const created_by = request.user._id;
     const { game_type, team_a, team_b, score_to_win } = request.body;
 
-    // --- Basic Validation ---
     if (!game_type || !team_a || !team_b || team_a.length === 0 || team_b.length === 0) {
-        // Removed score_to_win check from here based on previous discussion
         return response.status(400).json({ message: 'Missing required game creation fields (game_type, team_a, team_b)' });
     }
 
     const allIds = [...team_a, ...team_b];
-    const uniqueIds = [...new Set(allIds)]; // Get unique IDs
+    const uniqueIds = [...new Set(allIds)];
 
-    // --- Validate ID Format ---
     for (const id of uniqueIds) {
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return response.status(400).json({ message: `Invalid player ID format: ${id}` });
@@ -235,19 +236,16 @@ const createGame = async (request, response) => {
     }
 
     try {
-        // --- <<< ADD THIS CHECK: Check if all player IDs exist >>> ---
-        const foundPlayers = await Player.find({ '_id': { $in: uniqueIds } }).select('_id'); // Find players whose IDs are in the list
+        const foundPlayers = await Player.find({ '_id': { $in: uniqueIds } }).select('_id');
 
         if (foundPlayers.length !== uniqueIds.length) {
-            // If the number of found players doesn't match the number of unique IDs provided...
             const foundIds = foundPlayers.map(p => p._id.toString());
             const missingIds = uniqueIds.filter(id => !foundIds.includes(id));
             return response.status(404).json({
                  message: 'One or more player IDs were not found',
-                 missing_ids: missingIds // Tell the frontend which IDs are invalid
+                 missing_ids: missingIds
              });
         }
-        // --- End Existence Check ---
 
         // If all checks pass, proceed to create the game
         const newGame = new Game({
@@ -331,10 +329,9 @@ const addGameEvent = async (request, response) => {
 
         await game.save();
 
-        // Respond with the updated game (either just saved or fully finalized)
         response.status(200).json({
             message: 'Event added successfully',
-            game: game // Send back the updated game document
+            game: game
         });
 
 
@@ -352,10 +349,9 @@ const getGameById = async (request, response) => {
     }
 
     try {
-        // Populate player names/handles for easier display on frontend
         const game = await Game.findById(id)
-            .populate('all_player_ids', 'name instagram_handle') // Populate names for all players
-            .populate('created_by', 'email'); // Populate admin email
+            .populate('all_player_ids', 'name instagram_handle')
+            .populate('created_by', 'email');
 
         if (!game) {
             return response.status(404).json({ message: 'Game not found' });
@@ -377,12 +373,10 @@ const finalizeGame = async (request, response) => {
     }
 
     try {
-        // Use the internal helper function
         const finalizedGame = await _internalFinalizeGame(gameId);
 
         if (!finalizedGame) {
-        // Could mean game not found, or already finished/canceled
-        const game = await Game.findById(gameId); // Check current state
+        const game = await Game.findById(gameId);
         if (!game) return response.status(404).json({ message: 'Game not found' });
         return response.status(400).json({ message: `Game cannot be finalized, status is already '${game.status}'`});
         }
@@ -390,7 +384,6 @@ const finalizeGame = async (request, response) => {
         response.status(200).json({ message: 'Game finalized successfully', game: finalizedGame });
 
     } catch (error) {
-        // Errors from _internalFinalizeGame will be caught here
         console.error("Game Finalization Error:", error);
         response.status(500).json({ message: 'Server error during finalizing game' });
     }
@@ -417,17 +410,12 @@ const cancelGame = async (request, response) => {
         game.status = 'canceled'; // Set status to canceled
         game.winner = null; // Ensure winner is null
 
-        // --- Process stats up to cancellation ---
-        game.game_stats_summary = _internalCalculateStats(game); // Calculate partial stats
+        game.game_stats_summary = _internalCalculateStats(game);
 
-        // Save the game document first (with status & summary)
         const canceledGame = await game.save();
 
-        // --- Update player overall stats based on partial game ---
-        // Run this asynchronously in the background
         _internalUpdatePlayerStats(canceledGame).catch(err => {
              console.error(`Background player stat update failed for canceled game ${gameId}:`, err);
-             // Log error for monitoring
          });
 
         response.status(200).json({ message: 'Game canceled successfully, partial stats recorded.', game: canceledGame });

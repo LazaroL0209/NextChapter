@@ -16,13 +16,13 @@ const login = async (request, response) => {
 
         // Check if User Exists
         if (!user) {
-            // Use a generic message for security - don't reveal if email exists or not
-            return response.status(401).json({ message: 'Invalid credentials' });
+            return response.status(401).json({ message: 'Invalid Email' });
         }
 
         // Compare hash to input
         const isMatch = await bcrypt.compare(password, user.hashed_password);
 
+        // If they do not match
         if (!isMatch) {
             return response.status(401).json({ message: 'Invalid credentials' });
         }
@@ -35,7 +35,7 @@ const login = async (request, response) => {
         const secret = process.env.JWT_SECRET;
         if (!secret) {
             console.error("FATAL ERROR: JWT_SECRET is not defined in .env file");
-            return response.status(500).json({ message: "Server configuration error - cannot issue token" });
+            return response.status(500).json({ message: "Server configuration error, cannot issue token" });
         }
 
         const options = {
@@ -48,7 +48,7 @@ const login = async (request, response) => {
         response.status(200).json({
             message: 'Login successful',
             token: token,
-            user: { // send back non-sensitive user info
+            user: {
                 id: user._id,
                 email: user.email,
                 role: user.role

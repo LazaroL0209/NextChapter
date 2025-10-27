@@ -15,23 +15,21 @@ const protect = async (req, res, next) => {
         req.headers.authorization.startsWith('Bearer')
     ) {
         try {
-            // Get token from header (Bearer TOKEN_STRING)
+            // Get token from header (Bearer Token)
             token = req.headers.authorization.split(' ')[1];
 
-            // Verify the token using the secret key
+            // Verify the token using the secret key in environtment file
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            // Fetch the user associated with the token (excluding password)
+            // Fetch the user associated with the token
             // This ensures the user still exists
             req.user = await User.findById(decoded.userId).select('-hashed_password');
 
             if (!req.user) {
-                 // Handle case where user associated with token no longer exists
-                 return res.status(401).json({ message: 'Not authorized, user not found' });
+                return res.status(401).json({ message: 'Not authorized, user not found' });
             }
 
-            // If token is valid and user exists, proceed to the next middleware/route handler
-            next();
+            next(); // If token is valid and user exists, proceed to the next middleware/route handler
         } catch (error) {
             console.error('Token verification failed:', error);
             return res.status(401).json({ message: 'Not authorized, token failed' });

@@ -3,7 +3,8 @@ const controller = require('../tables/user/controller');
 
 const router = express.Router();
 
-// Controllers
+// -- Admin Functions ---
 router.post('/login', controller.login);
+// May add signout idk yet
 
 module.exports = router;

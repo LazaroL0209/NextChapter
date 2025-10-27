@@ -35,8 +35,7 @@ const createPlayer = async (request, response) => {
             weight_lbs,
             position,
             date_of_birth
-            // overall_stats will use defaults from the schema
-            // all_time_shot_data will start as an empty array
+            // overall_stats will and all_time_shot_data will start as an empty array
         });
 
         // Save the player to the database
@@ -69,7 +68,7 @@ const updatePlayer = async (request, response) => {
     // Prevent updating protected fields like stats directly via this route
     delete updates.overall_stats;
     delete updates.all_time_shot_data;
-    delete updates.created_by; // Should not change creator
+    delete updates.created_by;
 
     try {
         const updatedPlayer = await Player.findByIdAndUpdate(id, updates, { new: true, runValidators: true });

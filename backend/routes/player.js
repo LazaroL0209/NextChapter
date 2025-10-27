@@ -4,6 +4,7 @@ const { protect, restrictTo } = require('../middleware/auth');
 
 const router = express.Router();
 
+// -- Admin Functions ---
 router.post('/', protect, restrictTo('admin'), controller.createPlayer);
 router.patch('/:id', protect, restrictTo('admin'), controller.updatePlayer);
 router.delete('/:id', protect, restrictTo('admin'), controller.deletePlayer);
