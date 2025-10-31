@@ -15,7 +15,9 @@ const createPlayer = async (request, response) => {
         height_inches,
         weight_lbs,
         position,
-        date_of_birth
+        date_of_birth,
+        city,
+        state
     } = request.body;
 
     // Basic validation (add more robust validation later, e.g., express-validator)
@@ -34,7 +36,9 @@ const createPlayer = async (request, response) => {
             height_inches,
             weight_lbs,
             position,
-            date_of_birth
+            date_of_birth,
+            city,
+            state
             // overall_stats will and all_time_shot_data will start as an empty array
         });
 

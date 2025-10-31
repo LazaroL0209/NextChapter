@@ -51,6 +51,14 @@ const playerSchema = new Schema({
     date_of_birth: {
         type: Date
     },
+    city: {
+        type: String,
+        trim: true
+    },
+    state: {
+        type: String,
+        trim: true
+    },
     overall_stats: {
         games_played: { type: Number, default: 0 },
         wins: { type: Number, default: 0 },
