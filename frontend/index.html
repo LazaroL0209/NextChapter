@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Preview</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col" id="main-content">
+        <!-- Header -->
+        <div class="row" id="header">
+          <div class="col-3">
+            <img src="tnclogo.svg" alt="The Next Chapter" />
+          </div>
+          <div class="col" id="nav_links">
+            <p onclick="window.open('index.html', '_self')">Active Game</p>
+            <p onclick="window.open('players.html', '_self')">Players</p>
+            <p onclick="window.open('stats.html', '_self')">Stats</p>
+            <p onclick="window.open('newGame.html', '_self')">New Game</p>
+          </div>
+        </div>
+        <!-- Team Names -->
+        <div class="row" id="game_metrics">
+          <div class="col">
+            <p>Team <input type="text" id="teamAName" placeholder="Team A" > Team <input type="text" id="teamBName" placeholder="Team B" /></p>
+          </div>
+        </div>
+        <!-- Court Section -->
+        <div class="row" id="court_section">
+          <div class="col-2" id="team_a_players">
+            <h5>Team A</h5>
+            <!--Placeholders for where players will be added-->
+            <p> Player A1</p>
+            <p> Player A2</p>
+          </div>
+          <div class="col-8" id="court_card">
+            <h5>Court Preview</h5>
+            <div id="court_container">
+              <img src="court_diagram.png" id="court_image" alt="Basketball Court" />
+            </div>
+          </div>
+          <div class="col-2" id="team_b_players">
+            <!--Placeholders for where players will be added-->
+            <h5>Team B</h5>
+            <p> Player B1</p>
+            <p> Player B2</p>
+          </div>
+        </div>
+        <!-- Stat Selector -->
+        <div class="row mt-4" id="stat_selector">
+          <div class="col text-center">
+            <h5>Select Stat</h5>
+            <div id="stat_buttons" class="d-flex justify-content-center gap-2 flex-wrap">
+              <button class="btn btn-secondary" data-stat="Shot Made">Shot Made</button>
+              <button class="btn btn-secondary" data-stat="Shot Missed">Shot Missed</button>
+              <button class="btn btn-secondary" data-stat="Assist">Assist</button>
+              <button class="btn btn-secondary" data-stat="Rebound">Rebound</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
