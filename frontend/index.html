@@ -13,16 +13,23 @@
     <div class="row">
       <div class="col" id="main-content">
         <!-- Header -->
-        <div class="row" id="header">
-          <div class="col-3">
-            <img src="tnclogo.svg" alt="The Next Chapter" />
-          </div>
-          <div class="col" id="nav_links">
-            <p onclick="window.open('index.html', '_self')">Active Game</p>
-            <p onclick="window.open('players.html', '_self')">Players</p>
-            <p onclick="window.open('stats.html', '_self')">Stats</p>
-            <p onclick="window.open('newGame.html', '_self')">New Game</p>
-          </div>
+        <div class="row" id="top-header">
+            <!-- Placeholder for game type, remove '1v1' after implementation-->
+            <div class="col" id="gameTypeVisual">
+              <p id="gameType">1v1 game to 500pts</p>
+            </div>
+            <div class="col" id="headerLogoContainer">  
+              <img src="tnclogo.svg" alt="The Next Chapter" id="headerLogo" />
+            </div>
+            <div class="col" id="mainMenuRedirect">
+              <p onclick="window.open('mainMenu.html','_self')">Back to Main Menu</p>
+            </div>
+        </div>
+        <div class="col" id="nav_links">
+          <p onclick="window.open('index.html', '_self')">Active Game</p>
+          <p onclick="window.open('players.html', '_self')">Players</p>
+          <p onclick="window.open('stats.html', '_self')">Stats</p>
+          <p onclick="window.open('newGame.html', '_self')">New Game</p>
         </div>
         <!-- Team Names -->
         <div class="row" id="game_metrics">
@@ -59,7 +66,7 @@
               <button class="btn btn-secondary" data-stat="Shot Made">Shot Made</button>
               <button class="btn btn-secondary" data-stat="Shot Missed">Shot Missed</button>
               <button class="btn btn-secondary" data-stat="Assist">Assist</button>
-              <button class="btn btn-secondary" data-stat="Rebound">Rebound</button>
+              <button class="btn btn-secondary" data-stat="Pass">Pass</button>
             </div>
           </div>
         </div>
