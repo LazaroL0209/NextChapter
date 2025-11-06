@@ -16,7 +16,7 @@
         <div class="row" id="top-header">
             <!-- Placeholder for game type, remove '1v1' after implementation-->
             <div class="col" id="gameTypeVisual">
-              <p id="gameType">1v1 game to 500pts</p>
+              <p id="gameType">1v1 game to 50pts</p>
             </div>
             <div class="col" id="headerLogoContainer">  
               <img src="tnclogo.svg" alt="The Next Chapter" id="headerLogo" />
@@ -25,17 +25,32 @@
               <p onclick="window.open('mainMenu.html','_self')">Back to Main Menu</p>
             </div>
         </div>
-        <div class="col" id="nav_links">
-          <p onclick="window.open('index.html', '_self')">Active Game</p>
-          <p onclick="window.open('players.html', '_self')">Players</p>
-          <p onclick="window.open('stats.html', '_self')">Stats</p>
-          <p onclick="window.open('newGame.html', '_self')">New Game</p>
+        <!-- Play buttons -->
+        <div class="col" id="game_controls">
+          <button class="btn btn-secondary" id="pauseGameBtn">Pause</button>
+          <button class="btn btn-primary" id="startGameBtn">Start Game</button>
+          <button class="btn btn-undo" id="undoStatBtn">Undo Stat</button>
         </div>
         <!-- Team Names -->
         <div class="row" id="game_metrics">
           <div class="col">
-            <p>Team <input type="text" id="teamAName" placeholder="Team A" > Team <input type="text" id="teamBName" placeholder="Team B" /></p>
+            <h5>Score</h5>
+            <p><span id="teamAScore">0</span></p>
           </div>
+          <div class="col">
+            <p>Team <input type="text" id="teamAName" placeholder="Team A" ></p>
+          </div>
+          <div class="col">
+            <h5>Time</h5>  
+            <p id="gameTimer">00:00</p>
+          </div> 
+          <div class="col">
+            <p>Team <input type="text" id="teamBName" placeholder="Team B" ></p>
+          </div>
+          <div class="col">
+            <h5>Score</h5>
+            <p><span id="teamBScore">0</span></p>
+          </div>  
         </div>
         <!-- Court Section -->
         <div class="row" id="court_section">
@@ -45,7 +60,7 @@
             <p> Player A1</p>
             <p> Player A2</p>
           </div>
-          <div class="col-8" id="court_card">
+          <div class="col-2" id="court_card">
             <h5>Court Preview</h5>
             <div id="court_container">
               <img src="court_diagram.png" id="court_image" alt="Basketball Court" />
@@ -63,10 +78,10 @@
           <div class="col text-center">
             <h5>Select Stat</h5>
             <div id="stat_buttons" class="d-flex justify-content-center gap-2 flex-wrap">
-              <button class="btn btn-secondary" data-stat="Shot Made">Shot Made</button>
-              <button class="btn btn-secondary" data-stat="Shot Missed">Shot Missed</button>
-              <button class="btn btn-secondary" data-stat="Assist">Assist</button>
-              <button class="btn btn-secondary" data-stat="Pass">Pass</button>
+              <button class="btn btn-stat" data-stat="Shot Made">Shot Made</button>
+              <button class="btn btn-stat" data-stat="Shot Missed">Shot Missed</button>
+              <button class="btn btn-stat" data-stat="Assist">Assist</button>
+              <button class="btn btn-stat" data-stat="Pass">Pass</button>
             </div>
           </div>
         </div>
