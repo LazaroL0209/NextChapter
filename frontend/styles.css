@@ -117,7 +117,6 @@ body {
 
 #court_card {
   margin: 0 auto;
-  padding: 0.25rem 1rem;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(16, 24, 40, 0.18), 0 2px 4px rgba(16, 24, 40, 0.12);
@@ -128,13 +127,13 @@ body {
 
 #court_container {
   position: relative;
-  width: 100%;
+  max-width: 700px;
   height: auto;
 }
 
 #court_image {
   width: 100%;
-  max-height: 400px;
+  max-height: 800px;
   object-fit: contain;
   cursor: crosshair;
   border-radius: 12px;
