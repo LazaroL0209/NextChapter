@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheNextChapter | Basketball Shot Logger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Setup */
+        :root {
+            /* LIGHT MODE COLORS (DEFAULT) */
+            --primary-blue: #3A478F; /* Deep Indigo/Navy Blue - used for buttons/headers in light mode */
+            --light-blue: #6A7BC5; /* Medium Blue - used for highlights/hover */
+            --background-light: #F7F7F7; 
+            --card-background: #FFFFFF;
+            --text-dark: #333333;
+            --text-muted: #666666;
+            --border-color: #E0E0E0;
+            --button-text: #FFFFFF;
+            --table-header-bg: #f0f0f0;
+
+            /* DARK MODE COLORS */
+            --dark-background-color: #1a1a2e; /* Dark navy background */
+            --dark-card-color: #2c2c47; /* Slightly lighter card color for contrast with background */
+            --dark-text-color: #f0f0f0; /* Bright white text for maximum readability */
+            --dark-text-muted: #aaaaaa; /* Mid-grey for muted text */
+            --dark-border-color: #3e3e60; /* Dark border lines */
+        }
+        
+        /* DARK MODE STYLES */
+        body.dark-mode {
+            background-color: var(--dark-background-color);
+            color: var(--dark-text-color); /* Main text is bright white */
+        }
+
+        body.dark-mode .section,
+        body.dark-mode header,
+        body.dark-mode nav {
+            background-color: var(--dark-card-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode h2,
+        body.dark-mode h1,
+        body.dark-mode nav a.active {
+            color: var(--light-blue); /* Use the brighter light-blue for headers/active items */
+        }
+
+        body.dark-mode .tagline,
+        body.dark-mode nav a,
+        body.dark-mode .text-muted,
+        body.dark-mode td {
+            color: var(--dark-text-muted) !important; /* Ensure muted/table text is clearly visible mid-grey */
+        }
+
+        body.dark-mode nav a.active {
+            border-bottom-color: var(--light-blue) !important;
+        }
+
+        body.dark-mode .game-mode-button-outline {
+             color: var(--light-blue); 
+             border: 2px solid var(--light-blue);
+        }
+        
+        body.dark-mode th {
+            background-color: var(--dark-border-color); /* Use dark border color for table header background */
+            color: var(--light-blue) !important; /* REFINEMENT 1: Make table headers bright blue */
+        }
+
+        body.dark-mode th,
+        body.dark-mode td {
+            border-bottom: 1px solid var(--dark-border-color);
+        }
+
+        body.dark-mode .cta-button, 
+        body.dark-mode .action-button {
+            /* Keep buttons the same deep blue for branding, but ensure text is white */
+            background-color: var(--primary-blue);
+            color: var(--button-text);
+        }
+
+        /* NEW: Dark mode styling for the search input field */
+        body.dark-mode input[type="text"] {
+            background-color: var(--dark-background-color) !important;
+            color: var(--dark-text-color) !important;
+            border-color: var(--dark-border-color) !important;
+        }
+        
+        /* BASE STYLES */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header & Toggle Button */
+        header {
+            text-align: center;
+            padding: 40px 0 20px 0;
+            margin-bottom: 20px;
+            background-color: var(--card-background);
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            position: relative;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        #mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: none;
+            border: none;
+            color: var(--primary-blue);
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: color 0.2s;
+        }
+
+        #mode-toggle:hover {
+            color: var(--light-blue);
+        }
+        
+        /* This is explicitly targeted for the SVG icons */
+        body.dark-mode svg {
+            fill: var(--light-blue) !important;
+        }
+
+
+        h1 {
+            color: var(--primary-blue); 
+            font-size: 2.8em;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+
+        .tagline {
+            color: var(--text-muted);
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        /* Section Styling */
+        .section {
+            background-color: var(--card-background);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        h2 {
+            color: var(--primary-blue); 
+            font-size: 1.6em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        /* Button Styling */
+        .cta-button, .action-button {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: var(--primary-blue); 
+            color: var(--button-text);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.05em;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta-button:hover, .action-button:hover {
+            background-color: var(--light-blue); 
+            transform: translateY(-1px);
+        }
+
+        /* REFINEMENT 2: Specific style for the secondary "Add Player" button */
+        .add-player-button {
+            background-color: var(--light-blue); 
+        }
+
+        .add-player-button:hover {
+            background-color: var(--primary-blue);
+        }
+
+        /* Navigation Bar */
+        nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background-color: var(--card-background);
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            padding: 10px 0;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        nav a {
+            padding: 10px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-bottom: 3px solid transparent;
+            margin: 0 10px;
+            transition: color 0.3s, border-bottom 0.3s;
+            font-weight: 500;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--primary-blue); 
+            border-bottom-color: var(--primary-blue); 
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+
+        thead {
+            background-color: var(--table-header-bg);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s;
+        }
+
+        th {
+            color: var(--primary-blue); 
+            font-weight: 600;
+        }
+
+        /* Game Mode buttons */
+        .game-mode-button-outline {
+             background: var(--card-background); 
+             color: var(--primary-blue); 
+             border: 2px solid var(--primary-blue);
+             transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button id="mode-toggle" aria-label="Toggle Dark Mode">
+            ☀️
+        </button>
+        <h1>TheNextChapter</h1>
+        <p class="tagline">Basketball Shot Logger | Track shots, stats, and player performance in real-time</p>
+    </header>
+
+    <div class="container">
+        
+        <nav>
+            <a href="#startup" class="active">⚡ Active Game</a>
+            <a href="#profiles">👤 Players</a>
+            <a href="#stats">📊 Stats</a>
+            <a href="#new-game">+ New Game</a>
+        </nav>
+
+        <div id="startup" class="section" style="text-align: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="var(--primary-blue)" viewBox="0 0 24 24">
+                <path d="M13 18v-4h3l-4-9v4h-3l4 9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+            </svg>
+            <p style="margin-top: 10px; font-size: 1.2em; font-weight: 500;">
+                **No Active Game**
+            </p>
+            <p class="text-muted">
+                Start a new game to begin tracking shots and stats.
+            </p>
+            <button class="cta-button">Start New Game</button>
+        </div>
+        
+        <div id="profiles" class="section">
+            <h2>👤 Player Profiles</h2>
+            <p class="tagline" style="color: var(--text-muted);">Manage player information for quick game setup.</p>
+            <div style="text-align: center; padding: 20px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="var(--light-blue)" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <p class="text-muted" style="margin-top: 10px;">
+                    No player profiles yet
+                </p>
+                <p class="text-muted" style="font-size: 0.9em;">
+                    Create player profiles to quickly add them to games
+                </p>
+                <button class="action-button add-player-button">+ Add Player</button>
+            </div>
+        </div>
+
+        <div id="new-game" class="section">
+            <h2>+ New Game Setup</h2>
+            <p class="tagline" style="color: var(--text-muted);">Choose game mode and select players.</p>
+            <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+                <button class="action-button game-mode-button-outline">1v1</button>
+                <button class="action-button">2v2</button>
+                <button class="action-button game-mode-button-outline">3v3</button>
+                <button class="action-button game-mode-button-outline">5v5</button>
+            </div>
+            <p class="text-muted" style="text-align: center;">(Player selection inputs would appear here)</p>
+            <div style="text-align: center;">
+                 <button class="cta-button">Start Game</button>
+            </div>
+        </div>
+        
+        <div id="stats" class="section">
+            <h2>📊 Stats Review</h2>
+            <p class="tagline" style="color: var(--text-muted);">Review and analyze tracked player performance from all games.</p>
+            
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="player-search" placeholder="Search player name..." 
+                       style="width: 100%; padding: 10px; border: 1px solid var(--border-color); 
+                              border-radius: 8px; box-sizing: border-box; font-size: 1em;
+                              background-color: var(--card-background); color: var(--text-dark);">
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table id="stats-table"> 
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>GP</th>
+                            <th>PTS</th>
+                            <th>FG%</th>
+                            <th>3P%</th>
+                            <th>FT%</th>
+                            <th>AST</th>
+                            <th>REB</th>
+                            <th>BLK</th>
+                            <th>STL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: bold;">Azul</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>0%</td>
+                            <td>0%</td>
+                            <td>0%</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">player2</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>0%</td>
+                            <td>0%</td>
+                            <td>0%</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <footer style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.8em; margin-top: 20px;">
+        TheNextChapter &copy; 2024 | Pitched from TNC Stats Tracker V1.
+    </footer>
+
+    <script>
+        const toggleButton = document.getElementById('mode-toggle');
+        const body = document.body;
+        const toggleIcon = '☀️'; // Sun emoji
+
+        // Check for user preference or saved setting
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedMode = localStorage.getItem('theme');
+
+        if (savedMode === 'dark' || (savedMode === null && prefersDark)) {
+            body.classList.add('dark-mode');
+            toggleButton.innerHTML = '🌙'; // Moon emoji for dark mode
+        } else {
+            toggleButton.innerHTML = toggleIcon;
+        }
+
+        toggleButton.addEventListener('click', () => {
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+                toggleButton.innerHTML = toggleIcon;
+            } else {
+                body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+                toggleButton.innerHTML = '🌙';
+            }
+        });
+
+        // *** NEW: Player Search Functionality ***
+        const searchInput = document.getElementById('player-search');
+        const statsTable = document.getElementById('stats-table');
+
+        if (searchInput && statsTable) {
+            searchInput.addEventListener('keyup', function() {
+                const filter = searchInput.value.toUpperCase();
+                const tr = statsTable.getElementsByTagName('tr');
+
+                // Loop through all table rows, starting from index 1 to skip the header
+                for (let i = 1; i < tr.length; i++) {
+                    // Get the Player Name column (first <td>)
+                    const td = tr[i].getElementsByTagName('td')[0]; 
+                    if (td) {
+                        const txtValue = td.textContent || td.innerText;
+                        
+                        // Show row if player name matches the search filter, hide otherwise
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                        } else {
+                            tr[i].style.display = "none";
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
