@@ -12,7 +12,7 @@
 (function(window) {
   'use strict';
 
-  const API_BASE_URL = 'https://the-next-chapter-backend.onrender.com/';
+  const API_BASE_URL = 'https://the-next-chapter-backend.onrender.com';
 
   // -----------------------------------------------------------------
   // 2. CORE HELPER FUNCTIONS
@@ -23,7 +23,7 @@
    * It automatically gets the token from localStorage and adds it
    * to the Authorization header.
    *
-   * @param {string} endpoint - The API endpoint (e.g., '/api/players')
+   * @param {string} endpoint - The API endpoint (e.g., '/players')
    * @param {string} method - The HTTP method (e.g., 'POST', 'PATCH')
    * @param {object} [body] - The JSON data to send (optional)
    * @returns {Promise<object>} The JSON response from the server
@@ -84,17 +84,12 @@
     }
   }
 
+  // APIs
   const apiClient = {};
 
-  /**
-   * Logs in a user.
-   * @param {string} email
-   * @param {string} password
-   * @returns {Promise<object>} { message, token, user }
-   */
   apiClient.login = async function(email, password) {
     // This is the only request that *doesn't* use the helper
-    const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+    const response = await fetch(`${API_BASE_URL}/user/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -112,9 +107,6 @@
     return data;
   };
 
-  /**
-   * Logs out the current user.
-   */
   apiClient.logout = function() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
@@ -123,19 +115,11 @@
     console.log('Logged out');
   };
 
-  /**
-   * Gets the stored user data.
-   * @returns {object|null} The user object or null
-   */
   apiClient.getUser = function() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   };
 
-  /**
-   * Gets the stored auth token.
-   * @returns {string|null} The JWT
-   */
   apiClient.getToken = function() {
     return localStorage.getItem('authToken');
   };
@@ -143,128 +127,61 @@
 
   // =============================================================
   // PLAYERS API
-  // (Mounted at /api/players)
   // =============================================================
 
-  /**
-   * Creates a new player (Admin only).
-   * @param {object} playerData - { name, instagram_handle, bio, ... }
-   * @returns {Promise<object>} The new player object
-   */
   apiClient.createPlayer = async function(playerData) {
-    return _fetchWithToken('/api/players', 'POST', playerData);
+    return _fetchWithToken('/player', 'POST', playerData);
   };
 
-  /**
-   * Updates an existing player (Admin only).
-   * @param {string} playerId
-   * @param {object} updates - { name, bio, ... }
-   * @returns {Promise<object>} The updated player object
-   */
   apiClient.updatePlayer = async function(playerId, updates) {
-    return _fetchWithToken(`/api/players/${playerId}`, 'PATCH', updates);
+    return _fetchWithToken(`/player/${playerId}`, 'PATCH', updates);
   };
 
-  /**
-   * Deletes a player (Admin only).
-   * @param {string} playerId
-   * @returns {Promise<object>} { message: 'Player Deleted' }
-   */
   apiClient.deletePlayer = async function(playerId) {
-    return _fetchWithToken(`/api/players/${playerId}`, 'DELETE');
+    return _fetchWithToken(`/player/${playerId}`, 'DELETE');
   };
 
-  /**
-   * Searches for players (Public).
-   * @param {string} searchTerm
-   * @returns {Promise<Array>} List of player objects
-   */
   apiClient.searchPlayers = async function(searchTerm) {
-    return _fetchPublic(`/api/players?search=${encodeURIComponent(searchTerm)}`);
+    return _fetchPublic(`/player?search=${encodeURIComponent(searchTerm)}`);
   };
 
-  /**
-   * Gets a single player by their ID (Public).
-   * @param {string} playerId
-   * @returns {Promise<object>} The full player object
-   */
   apiClient.getPlayerById = async function(playerId) {
-    return _fetchPublic(`/api/players/${playerId}`);
+    return _fetchPublic(`/player/${playerId}`);
   };
 
-  /**
-   * Gets recent games for a single player (Public).
-   * @param {string} playerId
-   * @returns {Promise<Array>} List of game objects
-   */
   apiClient.getPlayerRecentGames = async function(playerId) {
-    return _fetchPublic(`/api/players/${playerId}/games`);
+    return _fetchPublic(`/player/${playerId}/games`);
   };
 
 
   // =============================================================
   // GAMES API
-  // (Mounted at /api/games)
   // =============================================================
 
-  /**
-   * Creates a new game (Admin only).
-   * @param {object} gameData - { game_type, team_a, team_b, score_to_win }
-   * @returns {Promise<object>} The new game object
-   */
   apiClient.createGame = async function(gameData) {
-    return _fetchWithToken('/api/games', 'POST', gameData);
+    return _fetchWithToken('/game', 'POST', gameData);
   };
 
-  /**
-   * Updates a game's general info (Admin only).
-   * @param {string} gameId
-   * @param {object} updates - { score_to_win, ... }
-   * @returns {Promise<object>} The updated game object
-   */
   apiClient.updateGame = async function(gameId, updates) {
-    return _fetchWithToken(`/api/games/${gameId}`, 'PATCH', updates);
+    return _fetchWithToken(`/game/${gameId}`, 'PATCH', updates);
   };
 
-  /**
-   * Adds a game event (shot, rebound, etc.) to a game (Admin only).
-   * @param {string} gameId
-   * @param {object} eventData - { type, player_id, team, ... }
-   * @returns {Promise<object>} { message, game }
-   */
   apiClient.addGameEvent = async function(gameId, eventData) {
-    return _fetchWithToken(`/api/games/${gameId}/event`, 'POST', eventData);
+    return _fetchWithToken(`/game/${gameId}/event`, 'POST', eventData);
   };
 
-  /**
-   * Manually finalizes a game (Admin only).
-   * @param {string} gameId
-   * @returns {Promise<object>} { message, game }
-   */
   apiClient.finalizeGame = async function(gameId) {
-    return _fetchWithToken(`/api/games/${gameId}/finish`, 'PATCH');
+    return _fetchWithToken(`/game/${gameId}/finish`, 'PATCH');
   };
 
-  /**
-   * Cancels an in-progress game (Admin only).
-   * @param {string} gameId
-   * @returns {Promise<object>} { message, game }
-   */
   apiClient.cancelGame = async function(gameId) {
-    return _fetchWithToken(`/api/games/${gameId}/cancel`, 'PATCH');
+    return _fetchWithToken(`/game/${gameId}/cancel`, 'PATCH');
   };
 
-  /**
-   * Gets a single game by its ID (Public).
-   * @param {string} gameId
-   * @returns {Promise<object>} The full game object
-   */
   apiClient.getGameById = async function(gameId) {
-    return _fetchPublic(`/api/games/${gameId}`);
+    return _fetchPublic(`/game/${gameId}`);
   };
 
-
-  // Attach the 'apiClient' object to the global 'window'
   window.apiClient = apiClient;
 
-})(window); // Immediately invoke the function, passing in the 'window' object
+})(window);
