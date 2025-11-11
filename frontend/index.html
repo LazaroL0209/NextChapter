@@ -39,7 +39,6 @@
 
         body.dark-mode .section,
         body.dark-mode header,
-        body.dark-mode nav,
         body.dark-mode .stat-card {
             background-color: var(--dark-card-color);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
@@ -88,6 +87,10 @@
             color: var(--dark-text-color) !important;
             border-color: var(--dark-border-color) !important;
         }
+
+        body.dark-mode #header-logo {
+            filter: brightness(0) invert(1);
+        }
         
         /* BASE STYLES - NBA Stats Aesthetic */
         body {
@@ -106,25 +109,37 @@
             padding: 20px;
         }
         
-        /* Header & Toggle/Auth Buttons */
+        /* === MODIFIED HEADER === */
         header {
-            text-align: center;
-            padding: 40px 0 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 25px; /* Reduced padding */
             margin-bottom: 0; 
             background-color: var(--card-background);
-            border-radius: 0; 
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            position: relative;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Space between logo and nav */
+        }
+        
+        #header-logo {
+            height: 40px; /* Adjust logo height as needed */
+            width: auto;
+            object-fit: contain;
         }
 
         #header-controls {
-            position: absolute;
-            top: 15px;
-            right: 25px;
+            /* Removed absolute positioning */
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        /* === END MODIFIED HEADER === */
 
         #mode-toggle {
             background: none;
@@ -150,42 +165,24 @@
             transform: translateY(-1px);
         }
 
-        h1 {
-            color: var(--primary-blue); 
-            font-size: 3.5em; 
-            margin-bottom: 0;
-            font-weight: 900;
-            letter-spacing: 2px;
-        }
-
-        .tagline {
-            color: var(--text-muted);
-            font-size: 1em;
-            font-weight: 500;
-            margin-top: 5px;
-        }
-
-        /* Navigation Bar */
+        /* Removed h1 and tagline styles as they are no longer in the header */
+        
+        /* === MODIFIED NAVIGATION === */
         nav {
             display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            background-color: var(--card-background);
-            border-radius: 0;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
+            /* Removed all previous styles (margin, bg, shadow, padding) */
         }
 
         nav a {
-            padding: 10px 20px;
+            padding: 10px 15px; /* Adjusted padding */
             color: var(--text-muted);
             text-decoration: none;
             border-bottom: 3px solid transparent;
-            margin: 0 15px;
+            margin: 0 5px; /* Reduced margin */
             font-weight: 600;
-            font-size: 1.05em;
+            font-size: 1.0em; /* Slightly smaller font */
         }
+        /* === END MODIFIED NAVIGATION === */
 
         nav a:hover, nav a.active {
             color: var(--primary-blue); 
@@ -198,6 +195,7 @@
             padding: 30px 40px; 
             border-radius: 10px; 
             margin-bottom: 20px;
+            margin-top: 20px; /* Added margin-top to separate from header */
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s, box-shadow 0.3s;
         }
@@ -406,6 +404,82 @@
             fill: var(--light-blue);
         }
         
+        /* ===== Login Modal Styling ===== */
+        .login-modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        }
+
+        .login-content {
+        background: var(--card-background);
+        color: var(--text-dark);
+        padding: 30px 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 320px;
+        text-align: center;
+        }
+
+        body.dark-mode .login-content {
+        background: var(--dark-card-color);
+        color: var(--dark-text-color);
+        }
+
+        .login-content input {
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        font-size: 1em;
+        }
+
+        body.dark-mode .login-content input {
+        background-color: var(--dark-background-color);
+        border-color: var(--dark-border-color);
+        color: var(--dark-text-color);
+        }
+
+        .login-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        }
+
+        .login-buttons button {
+        flex: 1;
+        margin: 0 5px;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        }
+
+        #login-submit {
+        background: var(--primary-blue);
+        color: var(--button-text);
+        }
+
+        #login-submit:hover {
+        background: var(--light-blue);
+        }
+
+        #login-cancel {
+        background: #ccc;
+        color: #333;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -413,8 +487,22 @@
             .section {
                 padding: 20px;
             }
-            h1 {
-                font-size: 2.5em;
+            header {
+                padding: 10px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .header-left {
+                width: 100%;
+                justify-content: space-between;
+            }
+            #header-controls {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            nav {
+                width: 100%;
+                justify-content: center;
             }
             nav a {
                 padding: 8px 10px;
@@ -422,26 +510,57 @@
                 font-size: 0.9em;
             }
         }
+        
+        @media (max-width: 480px) {
+             .header-left {
+                flex-direction: column;
+                gap: 10px;
+            }
+            nav {
+                border-top: 1px solid var(--border-color);
+                padding-top: 10px;
+                margin-top: 10px;
+            }
+            body.dark-mode nav {
+                border-top-color: var(--dark-border-color);
+            }
+            #header-logo {
+                height: 30px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- === MODIFIED HEADER STRUCTURE === -->
     <header>
+        <div class="header-left">
+            <img src="./assets/tnc.png" 
+                 alt="TNC Logo" 
+                 id="header-logo"
+                 onerror="this.src='https://placehold.co/120x40/3A478F/FFFFFF?text=TNC+Logo&font=inter'; this.onerror=null;">
+            
+            <nav id="main-nav">
+                <a href="#stats" class="active">📊 Overall Stats</a>
+                <a href="#profiles" class="hidden-nav-link" style="display: none;">👤 Player Management</a> 
+                <!-- JS controls display: none; -->
+            </nav>
+        </div>
+
         <div id="header-controls">
             <button id="sign-in-button" class="auth-button">Sign In</button>
             <button id="mode-toggle" aria-label="Toggle Dark Mode">
                 ☀️
             </button>
         </div>
-        <h1>TheNextChapter</h1>
-        <p class="tagline">Basketball Shot Logger</p>
+        
+        <!-- Removed H1 and Tagline from here -->
     </header>
+    <!-- === END MODIFIED HEADER === -->
+
 
     <div class="container">
         
-        <nav id="main-nav">
-            <a href="#stats" class="active">📊 Overall Stats</a>
-            <a href="#profiles" class="hidden-nav-link">👤 Player Management</a> 
-        </nav>
+        <!-- Navigation bar was here, now it's in the header -->
 
         <!-- STATS SECTION: PUBLIC TABLE VIEW -->
         <div id="stats" class="section">
@@ -517,7 +636,7 @@
 
 
         <!-- PLAYER MANAGEMENT SECTION: HIDDEN UNTIL SIGNED IN -->
-        <div id="profiles" class="section hidden-section">
+        <div id="profiles" class="section hidden-section" style="display: none;">
             <h2>👤 Player Management & History</h2>
             <p class="tagline" style="color: var(--text-muted);">Manage profiles, view game history, and player-specific stats.</p>
             
@@ -571,6 +690,11 @@
     <footer style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.8em; margin-top: 20px;">
         TheNextChapter &copy; 2025 | Public Stats Portal
     </footer>
+
+    <!-- Changed path to reflect uploaded file structure -->
+    <script src="./utils/api.js">
+        // API Section
+    </script>
 
     <script>
         // --- DATA SECTION: EASILY REMOVABLE DUMMY DATA ---
@@ -722,35 +846,76 @@
 
 
         // --- 3. SIGN-IN SIMULATION (REVISED LOGIC for Public Stats) ---
-        const SIGNED_IN_KEY = 'tnc_signed_in';
-        
-        function updateUIState() {
-            const isSignedIn = localStorage.getItem(SIGNED_IN_KEY) === 'true';
-            
-            if (isSignedIn) {
-                hiddenNavLinks.forEach(link => link.style.display = 'inline-block');
-                signInButton.textContent = 'Sign Out';
-            } else {
-                hiddenNavLinks.forEach(link => link.style.display = 'none');
-                hiddenSections.forEach(section => section.style.display = 'none'); 
-                signInButton.textContent = 'Sign In';
+        // --- LOGIN / LOGOUT WITH API ---
+        function showLoginModal() {
+            const modal = document.getElementById('login-modal');
+            modal.style.display = 'flex'; // show modal
 
-                // Ensure Stats is the active section when logging out
-                goToStatsList();
+            const emailInput = document.getElementById('login-email');
+            const passInput = document.getElementById('login-password');
+            const submitBtn = document.getElementById('login-submit');
+            const cancelBtn = document.getElementById('login-cancel');
+
+            // Clear previous values
+            emailInput.value = '';
+            passInput.value = '';
+
+            // Handle login
+            submitBtn.onclick = async () => {
+                const email = emailInput.value.trim();
+                const password = passInput.value.trim();
+                if (!email || !password) return alert('Please enter both fields.');
+
+                try {
+                const data = await apiClient.login(email, password);
+                console.log("Logged in:", data.user);
+                modal.style.display = 'none';
+                updateUIAfterLogin();
+                } catch (err) {
+                alert("Login failed: " + err.message);
+                }
+            };
+
+            // Handle cancel
+            cancelBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
+
+            // Close modal when clicking outside
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.style.display = 'none';
+            };
+        }
+
+        // Step 2: Update UI after login/logout
+        function updateUIAfterLogin() {
+            const user = apiClient.getUser();
+            if (user) {
+                // Show authorized sections
+                document.querySelectorAll('.hidden-nav-link').forEach(link => link.style.display = 'inline-block');
+                // We keep .hidden-section hidden by default, JS navigation will show it
+                signInButton.textContent = `Sign Out`; // Removed email for brevity
+            } else {
+                // Hide authorized sections
+                document.querySelectorAll('.hidden-nav-link').forEach(link => link.style.display = 'none');
+                document.querySelectorAll('.hidden-section').forEach(section => section.style.display = 'none');
+                signInButton.textContent = 'Sign In';
+                goToStatsList(); // Go back to stats if logged out from an admin page
             }
         }
 
-        const handleSignInOut = () => {
-            const isSignedIn = localStorage.getItem(SIGNED_IN_KEY) === 'true';
-            if (isSignedIn) {
-                localStorage.removeItem(SIGNED_IN_KEY); // Sign out
+        // Step 3: Handle sign in/out click
+        signInButton.addEventListener('click', async () => {
+            const token = apiClient.getToken();
+            if (token) {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                console.log('Logged out manually');
+                updateUIAfterLogin();
             } else {
-                localStorage.setItem(SIGNED_IN_KEY, 'true'); // Sign in
+                showLoginModal();
             }
-            updateUIState();
-        };
-
-        signInButton.addEventListener('click', handleSignInOut);
+        });
         
         // --- 4. PLAYER SEARCH FUNCTIONALITY ---
         if (searchInput && statsTable) {
@@ -828,14 +993,33 @@
                 const targetElement = document.getElementById(targetId);
                 
                 if (targetElement) {
-                   targetElement.style.display = 'block';
+                   // Only show if it's the public stats page OR if it's not a hidden section (i.e., user is logged in)
+                   if (targetId === 'stats' || !targetElement.classList.contains('hidden-section')) {
+                       targetElement.style.display = 'block';
+                   } else if (apiClient.getUser()) {
+                       // Failsafe for logged-in user
+                       targetElement.style.display = 'block';
+                   }
                 }
             });
         });
         
         // --- INITIALIZATION ---
         renderStatsTable(); // Render player data on load
-        updateUIState(); // Set initial sign-in state
+        updateUIAfterLogin(); // Set initial sign-in state
     </script>
+
+    <div id="login-modal" class="login-modal">
+        <div class="login-content">
+            <h2>Admin Login</h2>
+            <input type="email" id="login-email" placeholder="Email" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <div class="login-buttons">
+            <button id="login-submit">Sign In</button>
+            <button id="login-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
