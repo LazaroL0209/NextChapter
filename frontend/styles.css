@@ -116,25 +116,32 @@ body {
 }
 
 #court_card {
-  margin: 0 auto;
-  background: #ffffff;
+  width: 100%;
+  max-width: 670px;
+  display: flex;
+  margin: auto;
+  background: transparent;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(16, 24, 40, 0.18), 0 2px 4px rgba(16, 24, 40, 0.12);
-  color: #0b4a9e;
-  font-weight: 700;
-  text-align: center;
+  justify-content: center;
+  align-items: center;
 }
 
 #court_container {
-  position: relative;
-  max-width: 700px;
+  padding: 0;
+  margin: 0;
+  width: 100%;
   height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #court_image {
   width: 100%;
-  max-height: 800px;
-  object-fit: contain;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  display: block;
   cursor: crosshair;
   border-radius: 12px;
 }
