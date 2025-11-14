@@ -128,6 +128,9 @@
   // =============================================================
   // PLAYERS API
   // =============================================================
+  apiClient.listAllPlayers = async function(page = 1, limit = 25) {
+    return _fetchPublic(`/player/all?page=${page}&limit=${limit}`);
+  };
 
   apiClient.createPlayer = async function(playerData) {
     return _fetchWithToken('/player', 'POST', playerData);
